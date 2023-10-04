@@ -3,6 +3,7 @@ import digitalio
 import board
 from rainbowio import colorwheel
 import neopixel
+import random
 
 # photocell
 import time
@@ -34,6 +35,9 @@ speaker = audioio.AudioOut(board.A0)
 sample_number = 0
 samples = ["happy.mp3", "slow.mp3"]
 
+interval = 0.6  # Time in seconds for color change
+last_time = time.monotonic()
+
 while True:
     brightness = potentiometer.value
 
@@ -53,9 +57,15 @@ while True:
             mp3stream = audiomp3.MP3Decoder(open(sample, "rb"))
             speaker.play(mp3stream)
             sample_number = (sample_number + 1) % len(samples)
-        # Show NeoPixels when it's dark
-        for i in range(255):
-            strip.fill(colorwheel(i))
-        strip.show()
+
+        current_time = time.monotonic()
+        if current_time - last_time >=interval:
+            for i in range(NUM_PIXELS):
+                r = random.randint(0, 255)
+                g = random.randint(0, 255)
+                b = random.randint(0, 255)
+                strip[i] = (r, g, b)
+            strip.show()
+            last_color_change_time = current_time
 
     time.sleep(0.25)
